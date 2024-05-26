@@ -7,10 +7,13 @@ import com.springbootvip.todoapp.service.ToDoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class ToDoServiceImpl implements ToDoService {
 
-    private ToDoRepository toDoRepository;
+    private final ToDoRepository toDoRepository;
     @Autowired
     public ToDoServiceImpl(ToDoRepository toDoRepository) {
         this.toDoRepository = toDoRepository;
@@ -23,6 +26,35 @@ public class ToDoServiceImpl implements ToDoService {
         DTOToDoActivate dto = maptoDTO(obj);
         return dto;
     }
+
+    @Override
+    public DTOToDoActivate updateToDo(DTOToDoActivate act,long id) {
+        ToDoActivate obj = toDoRepository.findById(id).orElseThrow(RuntimeException::new);
+        obj.setTitle(act.getTitle());
+        obj.setDescription(act.getDescription());
+        DTOToDoActivate dto = maptoDTO(toDoRepository.save(obj));
+        return dto;
+    }
+
+    @Override
+    public List<DTOToDoActivate> deleteToDo(long id) {
+        ToDoActivate obj = toDoRepository.findById(id).orElseThrow(RuntimeException::new);
+        toDoRepository.delete(obj);
+        return getAllToDo();
+    }
+
+    @Override
+    public List<DTOToDoActivate> getAllToDo() {
+        List<ToDoActivate> obj = toDoRepository.findAll();
+        return obj.stream().map(this::maptoDTO).toList();
+    }
+
+    @Override
+    public DTOToDoActivate getToDoById(long id) {
+        ToDoActivate obj = toDoRepository.findById(id).orElseThrow(RuntimeException::new);
+        return maptoDTO(obj);
+    }
+
     private ToDoActivate maptoObject(DTOToDoActivate dto){
         ToDoActivate obj = ToDoActivate.builder()
                 .id(dto.getId())
